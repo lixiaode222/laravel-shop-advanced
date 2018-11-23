@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    //定义商品的类型
+    const TYPE_NORMAL = 'normal';
+    const TYPE_CROWDFUNDING = 'crowdfunding';
+
+    //把类型和它的中文描述对应起来
+    public static $typeMap = [
+
+        self::TYPE_NORMAL => '普通商品',
+        self::TYPE_CROWDFUNDING => '众筹商品',
+    ];
+
 
     //可直接写入和修改的字段
     protected $fillable = [
@@ -17,7 +28,8 @@ class Product extends Model
         'rating',
         'sold_count',
         'review_count',
-        'price'
+        'price',
+        'type',
     ];
 
 
@@ -36,6 +48,12 @@ class Product extends Model
     public function category(){
 
         return $this->belongsTo(Category::class);
+    }
+
+    //模型关联 有商品得到它的众筹商品
+    public function crowdfunding(){
+
+        return $this->hasOne(CrowdfundingProduct::class);
     }
 
 

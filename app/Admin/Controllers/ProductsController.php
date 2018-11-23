@@ -9,17 +9,14 @@ use Encore\Admin\Grid;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use Encore\Admin\Controllers\ModelForm;
 
 class ProductsController extends Controller
 {
     use ModelForm;
 
-    /**
-     * Index interface.
-     *
-     * @return Content
-     */
+    //后台商品列表页面
     public function index()
     {
         return Admin::content(function (Content $content) {
@@ -28,12 +25,7 @@ class ProductsController extends Controller
         });
     }
 
-    /**
-     * Edit interface.
-     *
-     * @param $id
-     * @return Content
-     */
+    //后台编辑商品页面
     public function edit($id)
     {
         return Admin::content(function (Content $content) use ($id) {
@@ -42,11 +34,7 @@ class ProductsController extends Controller
         });
     }
 
-    /**
-     * Create interface.
-     *
-     * @return Content
-     */
+    //后台创建商品页面
     public function create()
     {
         return Admin::content(function (Content $content) {
@@ -55,16 +43,18 @@ class ProductsController extends Controller
         });
     }
 
-    /**
-     * Make a grid builder.
-     *
-     * @return Grid
-     */
+    //后台商品列表页面的表格形式
     protected function grid()
     {
         return Admin::grid(Product::class, function (Grid $grid) {
+
+            //使用with来预加载商品类目数据,减少sql查询次数，避免N+1问题
+            $grid->model()->with(['category']);
+
             $grid->id('ID')->sortable();
             $grid->title('商品名称');
+            // Laravel-Admin 支持用符号 . 来展示关联关系的字段
+            $grid->column('category.name','分类');
             $grid->on_sale('已上架')->display(function ($value) {
                 return $value ? '是' : '否';
             });
@@ -86,17 +76,20 @@ class ProductsController extends Controller
         });
     }
 
-    /**
-     * Make a form builder.
-     *
-     * @return Form
-     */
+    //后台创建和修改页面的表格形式
     protected function form()
     {
         // 创建一个表单
         return Admin::form(Product::class, function (Form $form) {
             // 创建一个输入框，第一个参数 title 是模型的字段名，第二个参数是该字段描述
             $form->text('title', '商品名称')->rules('required');
+            // 添加一个类目字段，与之前类目管理类似，使用 Ajax 的方式来搜索添加
+            $form->select('category_id', '分类')->options(function ($id) {
+                $category = Category::find($id);
+                if ($category) {
+                    return [$category->id => $category->full_name];
+                }
+            })->ajax('/admin/api/categories?is_directory=0');
             // 创建一个选择图片的框
             $form->image('image', '封面图片')->rules('required|image');
             // 创建一个富文本编辑器

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CrowdFundingOrderRequest;
 use App\Http\Requests\SendReviewRequest;
 use App\Exceptions\InvalidRequestException;
 use App\Http\Requests\OrderRequest;
+use App\Models\ProductSku;
 use App\Models\UserAddress;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -17,6 +19,7 @@ use Carbon\Carbon;
 
 class OrdersController extends Controller
 {
+    //订单列表页面
     public function index(Request $request)
     {
         $orders = Order::query()
@@ -28,6 +31,7 @@ class OrdersController extends Controller
         return view('orders.index', ['orders' => $orders]);
     }
 
+    //订单详情页面
     public function show(Order $order, Request $request)
     {
         $this->authorize('own', $order);
@@ -35,6 +39,7 @@ class OrdersController extends Controller
         return view('orders.show', ['order' => $order->load(['items.productSku', 'items.product'])]);
     }
 
+    //普通商品的下单逻辑
     public function store(OrderRequest $request, OrderService $orderService)
     {
         $user    = $request->user();
@@ -52,6 +57,7 @@ class OrdersController extends Controller
         return $orderService->store($user, $address, $request->input('remark'), $request->input('items'), $coupon);
     }
 
+    //商品收货逻辑
     public function received(Order $order, Request $request)
     {
         // 校验权限
@@ -68,6 +74,7 @@ class OrdersController extends Controller
         return $order;
     }
 
+    //商品查看评价逻辑
     public function review(Order $order)
     {
         // 校验权限
@@ -79,7 +86,8 @@ class OrdersController extends Controller
         // 使用 load 方法加载关联数据，避免 N + 1 性能问题
         return view('orders.review', ['order' => $order->load(['items.productSku', 'items.product'])]);
     }
-    
+
+    //商品评价逻辑
     public function sendReview(Order $order, SendReviewRequest $request)
     {
         // 校验权限
@@ -112,6 +120,7 @@ class OrdersController extends Controller
         return redirect()->back();
     }
 
+    //商品申请退款逻辑
     public function applyRefund(Order $order, ApplyRefundRequest $request)
     {
         // 校验订单是否属于当前用户
@@ -124,6 +133,10 @@ class OrdersController extends Controller
         if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
             throw new InvalidRequestException('该订单已经申请过退款，请勿重复申请');
         }
+        // 众筹订单不允许申请退款
+        if ($order->type === Order::TYPE_CROWDFUNDING) {
+            throw new InvalidRequestException('众筹订单不支持退款');
+        }
         // 将用户输入的退款理由放到订单的 extra 字段中
         $extra                  = $order->extra ?: [];
         $extra['refund_reason'] = $request->input('reason');
@@ -134,5 +147,16 @@ class OrdersController extends Controller
         ]);
 
         return $order;
+    }
+
+    //众筹商品下单逻辑
+    public function crowdfunding(CrowdFundingOrderRequest $request,OrderService $orderService){
+
+        $user = $request->user();
+        $sku = ProductSku::find($request->input('sku_id'));
+        $address = UserAddress::find($request->input('address_id'));
+        $amount = $request->input('amount');
+
+        return $orderService->crowdfunding($user,$address,$sku,$amount);
     }
 }

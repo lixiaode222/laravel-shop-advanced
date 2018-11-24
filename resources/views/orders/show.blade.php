@@ -108,7 +108,6 @@
         @if(!$order->paid_at && !$order->closed)
         <div class="payment-buttons">
           <a class="btn btn-primary btn-sm" href="{{ route('payment.alipay', ['order' => $order->id]) }}">支付宝支付</a>
-          <button class="btn btn-sm btn-success" id='btn-wechat'>微信支付</button>
         </div>
         @endif
         <!-- 支付按钮结束 -->
@@ -118,11 +117,13 @@
           <button type="button" id="btn-receive" class="btn btn-sm btn-success">确认收货</button>
         </div>
         @endif
-        <!-- 订单已支付，且退款状态是未退款时展示申请退款按钮 -->
-        @if($order->paid_at && $order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
-        <div class="refund-button">
-          <button class="btn btn-sm btn-danger" id="btn-apply-refund">申请退款</button>
-        </div>
+      <!-- 不是众筹订单，已支付，且退款状态是未退款时展示申请退款按钮 -->
+        @if($order->type !== \App\Models\Order::TYPE_CROWDFUNDING &&
+            $order->paid_at &&
+            $order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
+          <div class="refund-button">
+            <button class="btn btn-sm btn-danger" id="btn-apply-refund">申请退款</button>
+          </div>
         @endif
       </div>
     </div>
@@ -135,21 +136,6 @@
 @section('scriptsAfterJs')
 <script>
   $(document).ready(function() {
-    // 微信支付按钮事件
-    $('#btn-wechat').click(function() {
-      swal({
-        // content 参数可以是一个 DOM 元素，这里我们用 jQuery 动态生成一个 img 标签，并通过 [0] 的方式获取到 DOM 元素
-        content: $('<img src="{{ route('payment.wechat', ['order' => $order->id]) }}" />')[0],
-        // buttons 参数可以设置按钮显示的文案
-        buttons: ['关闭', '已完成付款'],
-      })
-      .then(function(result) {
-      // 如果用户点击了 已完成付款 按钮，则重新加载页面
-        if (result) {
-          location.reload();
-        }
-      })
-    });
 
     // 确认收货按钮点击事件
     $('#btn-receive').click(function() {

@@ -7,6 +7,7 @@ use App\Models\Order;
 use Carbon\Carbon;
 use App\Services\OrderService;
 use Illuminate\Console\Command;
+use App\Jobs\RefundCrowdfundingOrders;
 
 //结束众筹的命令
 class FinishCrowdfunding extends Command
@@ -35,7 +36,7 @@ class FinishCrowdfunding extends Command
                 //如果众筹目标金额大于实际众筹金额
                 if($crowdfunding->target_amount > $crowdfunding->total_amount){
                      //证明众筹失败，调用众筹失败的逻辑
-                    $this->crowdfundingFaild($crowdfunding);
+                    $this->crowdfundingFailed($crowdfunding);
                 }else{
                     //不然就是众筹成功，调用众筹成功的逻辑
                     $this->crowdfundingSucceed($crowdfunding);
@@ -53,13 +54,13 @@ class FinishCrowdfunding extends Command
     }
 
     //众筹失败的逻辑
-    protected function crowdfundingFailed(CrowdfundingProduct $crowdfunding){
-
-         //将众筹逻辑改为众筹失败
+    protected function crowdfundingFailed(CrowdfundingProduct $crowdfunding)
+    {
+        //将众筹状态改为众筹失败
         $crowdfunding->update([
             'status' => CrowdfundingProduct::STATUS_FAIL,
         ]);
-        //触发失败退款逻辑任务
+        //触发退款任务
         dispatch(new RefundCrowdfundingOrders($crowdfunding));
     }
 }

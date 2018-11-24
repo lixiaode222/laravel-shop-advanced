@@ -11,18 +11,17 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
+// ShouldQueue 代表此任务需要异步执行
 class RefundCrowdfundingOrders implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $crowdfunding;
 
-    //注入众筹商品的信息
     public function __construct(CrowdfundingProduct $crowdfunding)
     {
         $this->crowdfunding = $crowdfunding;
     }
-
 
     public function handle()
     {

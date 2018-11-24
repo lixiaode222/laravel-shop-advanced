@@ -57,4 +57,15 @@ Route::group([
     $router->delete('categories/{id}','CategoriesController@destroy');
     //后台下拉搜索框接口
     $router->get('api/categories', 'CategoriesController@apiIndex');
+    //后台众筹商品列表页面
+    $router->get('crowdfunding_products','CrowdfundingProductsController@index');
+    //后台创建众筹商品页面
+    $router->get('crowdfunding_products/create','CrowdfundingProductsController@create');
+    //后台创建众筹商品逻辑
+    $router->post('crowdfunding_products','CrowdfundingProductsController@store');
+    //后台编辑众筹商品页面
+    $router->get('crowdfunding_products/{id}/edit','CrowdfundingProductsController@edit');
+    //后台编辑众筹商品逻辑
+    $router->put('crowdfunding_products/{id}','CrowdfundingProductsController@update');
+
 });

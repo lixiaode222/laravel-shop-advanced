@@ -22,6 +22,7 @@ class Product extends Model
     //可直接写入和修改的字段
     protected $fillable = [
         'title',
+        'long_title',
         'description',
         'image',
         'on_sale',

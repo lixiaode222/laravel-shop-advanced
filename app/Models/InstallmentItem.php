@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Moontoast\Math\BigNumber;
 
 class InstallmentItem extends Model
@@ -34,6 +35,9 @@ class InstallmentItem extends Model
         'refund_status',
     ];
 
+    //表明这两个是日期时间类型
+    protected $dates = ['due_date', 'paid_at'];
+
     //模型关联 由分期项得到对应的分期
     public function installment(){
 
@@ -41,12 +45,13 @@ class InstallmentItem extends Model
     }
 
     //创建一个访问器，返回当前还款计划需要还的总金额
-    public function getTotalAttributes(){
-
-        $total = big_number($this->base)->add($this->fee);
+    public function getTotalAttribute()
+    {
+        $total = (new BigNumber($this->base, 2))->add($this->fee);
         if (!is_null($this->fine)) {
             $total->add($this->fine);
         }
+
         return $total->getValue();
     }
 

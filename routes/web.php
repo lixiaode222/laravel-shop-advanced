@@ -64,10 +64,12 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('coupon_codes/{code}', 'CouponCodesController@show')->name('coupon_codes.show');
         //众筹商品的下单逻辑
         Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
-        //分期付款逻辑
+        //用户分期付款逻辑
         Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
-        //用户分期列表
+        //用户分期列表页面
         Route::get('installments','InstallmentsController@index')->name('installments.index');
+        //用户分期详情页面
+        Route::get('installments/{installment}','InstallmentsController@show')->name('installments.show');
     });
 });
 

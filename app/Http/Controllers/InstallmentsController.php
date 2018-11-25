@@ -17,4 +17,20 @@ class InstallmentsController extends Controller
 
         return view('installments.index',compact('installments'));
     }
+
+    //分期详情页面
+    public function show(Installment $installment){
+
+        $this->authorize('own', $installment);
+
+        //取出分期付款中的所有还款计划，并按还款顺序排序
+        $items = $installment->items()->orderBy('sequence')->get();
+
+        return view('installments.show',[
+              'installment' => $installment,
+              'items'       => $items,
+               //下一个要还的分期   就是没付款的第一个
+            'nextItem'    => $items->where('paid_at', null)->first(),
+        ]);
+    }
 }

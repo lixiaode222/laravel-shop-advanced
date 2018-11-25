@@ -13,7 +13,7 @@ class Installment extends Model
 
     //把分期状态和中文描述对应起来
     public static $statusMap = [
-        self::STATUS_PEDING => '未执行',
+        self::STATUS_PENDING => '未执行',
         self::STATUS_REPAYING => '还款中',
         self::STATUS_FINISHED => '已完成',
     ];

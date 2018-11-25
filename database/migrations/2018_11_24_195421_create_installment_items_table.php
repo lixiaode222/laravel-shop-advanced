@@ -15,7 +15,7 @@ class CreateInstallmentItemsTable extends Migration
     {
         Schema::create('installment_items', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('installment_id')->unique();
+            $table->unsignedInteger('installment_id');
             $table->foreign('installment_id')->references('id')->on('installments')->onDelete('cascade');
             $table->unsignedInteger('sequence');
             $table->decimal('base');

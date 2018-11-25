@@ -103,6 +103,12 @@ abstract class CommonProductsController extends Controller{
             $form->text('stock', '剩余库存')->rules('required|integer|min:0');
         });
 
+        //关联商品属性
+        $form->hasMany('properties','商品属性',function (Form\NestedForm $form){
+            $form->text('name','属性名字')->rules('required');
+            $form->text('value','属性值')->rules('required');
+        });
+
         //通过所有的商品SKU得到最低的价格赋值给商品价格
         $form->saving(function (Form $form) {
             $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;

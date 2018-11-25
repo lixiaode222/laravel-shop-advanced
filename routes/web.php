@@ -70,6 +70,10 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('installments','InstallmentsController@index')->name('installments.index');
         //用户分期详情页面
         Route::get('installments/{installment}','InstallmentsController@show')->name('installments.show');
+        //用户分期付款支付宝页面拉起
+        Route::get('installments/{installment}/alipay', 'InstallmentsController@payByAlipay')->name('installments.alipay');
+        //分期付款支付宝前端回调
+        Route::get('installments/alipay/return', 'InstallmentsController@alipayReturn')->name('installments.alipay.return');
     });
 });
 
@@ -77,4 +81,6 @@ Route::group(['middleware' => 'auth'], function() {
 Route::get('products/{product}', 'ProductsController@show')->name('products.show');
 //支付宝后台回调
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');
+//分期付款支付宝后端回调   不能放在 auth 中间件中
+Route::post('installments/alipay/notify', 'InstallmentsController@alipayNotify')->name('installments.alipay.notify');
 

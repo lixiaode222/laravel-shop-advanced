@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncOneProductToES;
 use App\Models\Product;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
@@ -113,6 +114,12 @@ abstract class CommonProductsController extends Controller{
         //通过所有的商品SKU得到最低的价格赋值给商品价格
         $form->saving(function (Form $form) {
             $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
+        });
+
+        //在修改或者创建后自动把商品数据同步到ES里
+        $form->saved(function (Form $form){
+              $product = $form->model();
+              $this->dispatch(new SyncOneProductToES($product));
         });
 
         return $form;

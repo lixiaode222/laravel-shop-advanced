@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Support\Str;
+use App\SearchBuilders\ProductSearchBuilder;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -122,5 +124,11 @@ class Product extends Model
         });
 
         return $arr;
+    }
+
+    //根据id数组 去数据库查询对应的商品
+    public function scopeByIds($query, $ids)
+    {
+        return $query->whereIn('id', $ids)->orderByRaw(sprintf("FIND_IN_SET(id, '%s')", join(',', $ids)));
     }
 }

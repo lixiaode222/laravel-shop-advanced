@@ -4,6 +4,7 @@ namespace App\Console\Commands\Elasticsearch;
 use App\Models\Product;
 use Illuminate\Console\Command;
 
+//将数据同步到ES
 class SyncProducts extends Command
 {
     protected $signature = 'es:sync-products';

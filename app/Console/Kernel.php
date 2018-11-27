@@ -26,8 +26,10 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        //注册结束众筹命令的定时任务
+        //注册结束众筹命令的定时任务  每分钟执行一次
         $schedule->command('cron:finish-crowdfunding')->everyMinute();
+        //注册计算逾期费用的定时任务  daily()代表每天凌晨 00:00 执行
+        $schedule->command('cron:calculate-installment-fine')->daily();
     }
 
     /**

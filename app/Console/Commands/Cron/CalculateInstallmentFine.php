@@ -45,14 +45,14 @@ class CalculateInstallmentFine extends Command
                                           ->multiply($item->installment->fine_rate)
                                           ->divide(100)
                                           ->getValue();
+                                  // 避免逾期费高于本金与手续费之和，使用 compareTo 方法来判断
+                                  // 如果 $fine 大于 $base，则 compareTo 会返回 1，相等返回 0，小于返回 -1
+                                  $fine = big_number($fine)->compareTo($base) === 1 ? $base : $fine ;
+                                  //写入数据库
+                                  $item->update([
+                                      'fine' => $fine,
+                                  ]);
                               }
-                            // 避免逾期费高于本金与手续费之和，使用 compareTo 方法来判断
-                            // 如果 $fine 大于 $base，则 compareTo 会返回 1，相等返回 0，小于返回 -1
-                            $fine = big_number($fine)->compareTo($base) === 1 ? $base : $fine ;
-                            //写入数据库
-                            $item->update([
-                                'fine' => $fine,
-                            ]);
                         });
     }
 }

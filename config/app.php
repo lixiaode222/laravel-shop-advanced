@@ -229,7 +229,10 @@ return [
 
     ],
 
+    //普通订单的关闭时间
     'order_ttl' => 1800,
+    //秒杀订单的关闭时间
+    'seckill_order_ttl' => 600,
 
     'ngrok_url' => env('NGROK_URL'),
 

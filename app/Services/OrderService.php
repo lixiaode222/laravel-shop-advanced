@@ -143,6 +143,55 @@ class OrderService
         return $order;
     }
 
+    //秒杀商品下单逻辑
+    public function seckill(User $user,UserAddress $address,ProductSku $sku){
+
+        //开启事务
+        $order = \DB::transaction(function () use ($user,$address,$sku){
+
+              //更新地址的最后使用时间
+              $address->update(['last_used_at' => Carbon::now()]);
+              //创建一个订单
+              $order = new Order([
+                  'address'    => [ //将地址信息放入订单中
+                      'address'       => $address->full_address,
+                      'zip'           => $address->zip,
+                      'contact_name'  => $address->contact_name,
+                      'contact_phone' => $address->contact_phone,
+                  ],
+                  'remark'     => '',
+                  'total_amount' => $sku->price,
+                  'type'        =>  Order::TYPE_SECKILL,
+              ]);
+              //订单关联到当前用户
+              $order->user()->associate($user);
+              //写入数据库
+              $order->save();
+              //创建订单项
+              $item = $order->items()->make([
+                  'amount' => 1, //秒杀商品只能买一份
+                  'price'  => $sku->price,
+              ]);
+              //订单项关联商品
+              $item->product()->associate($sku->product_id);
+              //订单项关联商品sku
+              $item->productSku()->associate($sku);
+              //写入数据库
+              $item->save();
+              //扣减对应SKU库存
+              // 扣减对应 SKU 库存
+              if ($sku->decreaseStock(1) <= 0) {
+                    throw new InvalidRequestException('该商品库存不足');
+              }
+
+              return $order;
+        });
+        //开启秒杀订单的到时关闭任务
+        dispatch(new CloseOrder($order,config('app.seckill_order_ttl')));
+
+        return $order;
+    }
+
     //退款逻辑
     public function refundOrder(Order $order)
     {

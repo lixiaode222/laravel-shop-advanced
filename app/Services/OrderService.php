@@ -150,7 +150,7 @@ class OrderService
         //开启事务
         // 将 $addressData 传入匿名函数
         $order = \DB::transaction(function () use ($user, $addressData, $sku) {
-            
+
               //创建一个订单
               $order = new Order([
                   'address'      => [ // address 字段直接从 $addressData 数组中读取
@@ -178,11 +178,12 @@ class OrderService
               $item->productSku()->associate($sku);
               //写入数据库
               $item->save();
-              //扣减对应SKU库存
-              // 扣减对应 SKU 库存
+              // 扣减数据库中对应 SKU 库存
               if ($sku->decreaseStock(1) <= 0) {
                     throw new InvalidRequestException('该商品库存不足');
               }
+              //扣除redis中sku的库存
+              \Redis::decr('seckill_sku_'.$sku->id);
 
               return $order;
         });

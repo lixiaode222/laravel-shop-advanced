@@ -1,5 +1,8 @@
 <?php
 
+//秒杀商品下单逻辑
+Route::post('seckill_orders','OrdersController@seckill')->name('seckill_orders.store');
+
 //首页
 Route::redirect('/', '/products')->name('root');
 ////商品列表页面
@@ -74,8 +77,6 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('installments/{installment}/alipay', 'InstallmentsController@payByAlipay')->name('installments.alipay');
         //分期付款支付宝前端回调
         Route::get('installments/alipay/return', 'InstallmentsController@alipayReturn')->name('installments.alipay.return');
-        //秒杀商品下单逻辑
-        Route::post('seckill_orders','OrdersController@seckill')->name('seckill_orders.store');
     });
 });
 
